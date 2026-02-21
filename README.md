@@ -275,7 +275,7 @@ prosensia-smart-serve-system/
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/<your-username>/prosensia-smart-serve-system.git
+   git clone https://github.com/muhammadali-ip91/prosensia-smart-serve-system.git
    cd prosensia-smart-serve-system
    ```
 
