@@ -1,4 +1,4 @@
-﻿# Automation Module Dependencies
+# Automation Module Dependencies
 # Install: pip install -r automation/requirements.txt
 
 # HTTP Requests
@@ -6,7 +6,7 @@ requests==2.31.0
 httpx==0.26.0
 
 # Load Testing
-locust==2.20.1
+locust==2.43.3
 
 # Data Generation
 faker==22.5.0
