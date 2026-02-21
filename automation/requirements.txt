@@ -1,4 +1,4 @@
-﻿# Automation Module Dependencies
+# Automation Module Dependencies
 # Install: pip install -r automation/requirements.txt
 
 # HTTP Requests
@@ -32,4 +32,4 @@ colorama==0.4.6
 python-socketio[client]==5.11.0
 
 # JSON handling
-orjson==3.9.12
+orjson==3.11.7
