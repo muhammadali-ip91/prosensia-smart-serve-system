@@ -1,8 +1,8 @@
-﻿# AI Module Dependencies
+# AI Module Dependencies
 # Install: pip install -r ai_module/requirements.txt
 
 # Core ML Libraries
-scikit-learn==1.4.0
+scikit-learn==1.8.0
 pandas==2.2.0
 numpy==1.26.3
 joblib==1.3.2
