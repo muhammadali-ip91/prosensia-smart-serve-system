@@ -1,4 +1,4 @@
-﻿# Automation Module Dependencies
+# Automation Module Dependencies
 # Install: pip install -r automation/requirements.txt
 
 # HTTP Requests
@@ -9,7 +9,7 @@ httpx==0.26.0
 locust==2.20.1
 
 # Data Generation
-faker==22.5.0
+faker==40.4.0
 
 # Async Support
 asyncio-mqtt==0.16.2
