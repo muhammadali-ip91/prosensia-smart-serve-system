@@ -1,0 +1,29 @@
+[flake8]
+max-line-length = 120
+exclude =
+    venv,
+    .venv,
+    __pycache__,
+    migrations,
+    node_modules,
+    .git
+ignore =
+    W191,
+    E101,
+    E128,
+    E131,
+    W293,
+    W391,
+    E501,
+    F401,
+    F402,
+    E302,
+    E305,
+    E712,
+    F841,
+    W503,
+    E741
+per-file-ignores =
+    __init__.py: F401
+count = true
+statistics = true
