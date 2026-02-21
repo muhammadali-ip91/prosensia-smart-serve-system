@@ -153,7 +153,7 @@ jobs:
 
       - name: Upload backend test results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: backend-test-results
           path: |
@@ -225,7 +225,7 @@ jobs:
         
       - name: Upload AI test results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: ai-test-results
           path: |
@@ -293,7 +293,7 @@ jobs:
           echo "✅ Frontend build successful"
 
       - name: Upload build artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: frontend-build
           path: frontend/dist/
@@ -451,7 +451,7 @@ jobs:
 
       - name: Upload integration test results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: integration-test-results
           path: results-integration.xml
