@@ -331,7 +331,7 @@ jobs:
           docker build \
             -t prosensia-backend:test \
             -f backend/Dockerfile \
-            ./backend
+            .
           echo "✅ Backend Docker image built"
 
       - name: Build frontend image
