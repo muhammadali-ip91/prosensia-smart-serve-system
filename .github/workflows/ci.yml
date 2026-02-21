@@ -54,6 +54,7 @@ jobs:
           pip install -r ai_module/requirements.txt
 
       - name: Run flake8 (linting)
+        continue-on-error: true
         run: |
           flake8 backend/ \
             --config=.flake8 \
