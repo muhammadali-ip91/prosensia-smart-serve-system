@@ -1,0 +1,15 @@
+Method,Name,Error,Occurrences
+POST,/orders,HTTPError('400 Client Error: Bad Request for url: /orders'),9
+GET,/menu,"ConnectionRefusedError(10061, '[WinError 10061] No connection could be made because the target machine actively refused it.')",226
+POST,/orders,"ConnectionRefusedError(10061, '[WinError 10061] No connection could be made because the target machine actively refused it.')",5
+GET,/kitchen/orders,"ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None)",1
+GET,/kitchen/orders,RemoteDisconnected('Remote end closed connection without response'),6
+POST,/orders,"ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None)",2
+GET,/orders/my-orders,"ConnectionRefusedError(10061, '[WinError 10061] No connection could be made because the target machine actively refused it.')",9
+POST,/auth/login,"ConnectionRefusedError(10061, '[WinError 10061] No connection could be made because the target machine actively refused it.')",742
+GET,/orders/my-orders,HTTPError('404 Client Error: Not Found for url: /orders/my-orders'),13
+GET,/kitchen/orders,"ConnectionRefusedError(10061, '[WinError 10061] No connection could be made because the target machine actively refused it.')",14
+GET,/menu,RemoteDisconnected('Remote end closed connection without response'),3
+GET,/menu,"ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None)",1
+GET,/health,"ConnectionRefusedError(10061, '[WinError 10061] No connection could be made because the target machine actively refused it.')",45
+GET,/orders/my-orders,RemoteDisconnected('Remote end closed connection without response'),1

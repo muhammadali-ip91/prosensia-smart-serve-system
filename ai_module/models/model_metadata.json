@@ -1,0 +1,27 @@
+{
+  "model_type": "RandomForestRegressor",
+  "trained_at": "2026-02-14T21:50:47.127827",
+  "metrics": {
+    "mae": 2.5192,
+    "rmse": 3.1513,
+    "r2_score": 0.9228
+  },
+  "training_records": 3000,
+  "feature_names": [
+    "hour_of_day",
+    "day_of_week",
+    "is_peak_hour",
+    "is_weekend",
+    "num_items",
+    "item_complexity",
+    "avg_prep_time",
+    "station_distance",
+    "active_orders_count",
+    "kitchen_queue_length",
+    "available_runners",
+    "is_urgent"
+  ],
+  "version": "20260214_215047",
+  "threshold_mae": 3.0,
+  "passed_threshold": true
+}

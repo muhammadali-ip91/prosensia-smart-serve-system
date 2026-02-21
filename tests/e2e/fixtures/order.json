@@ -1,0 +1,9 @@
+{
+    "station_id": "Bay-1",
+    "items": [
+        { "item_id": 1, "quantity": 2 },
+        { "item_id": 3, "quantity": 1 }
+    ],
+    "priority": "Regular",
+    "special_instructions": "Test order"
+}

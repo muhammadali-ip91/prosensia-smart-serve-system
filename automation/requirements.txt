@@ -1,0 +1,35 @@
+﻿# Automation Module Dependencies
+# Install: pip install -r automation/requirements.txt
+
+# HTTP Requests
+requests==2.31.0
+httpx==0.26.0
+
+# Load Testing
+locust==2.20.1
+
+# Data Generation
+faker==22.5.0
+
+# Async Support
+asyncio-mqtt==0.16.2
+aiohttp==3.9.3
+
+# Concurrency
+concurrent-log-handler==0.9.24
+
+# Progress Bars
+tqdm==4.66.1
+
+# Configuration
+python-dotenv==1.0.0
+
+# Reporting
+tabulate==0.9.0
+colorama==0.4.6
+
+# Socket.IO Client (for WebSocket simulation)
+python-socketio[client]==5.11.0
+
+# JSON handling
+orjson==3.9.12

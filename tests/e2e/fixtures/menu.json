@@ -1,0 +1,28 @@
+{
+    "categories": [
+        {
+            "name": "Snacks",
+            "items": [
+                {
+                    "id": 1,
+                    "name": "Samosa",
+                    "price": 20,
+                    "prep_time": 5,
+                    "available": true
+                }
+            ]
+        },
+        {
+            "name": "Beverages",
+            "items": [
+                {
+                    "id": 3,
+                    "name": "Chai",
+                    "price": 15,
+                    "prep_time": 3,
+                    "available": true
+                }
+            ]
+        }
+    ]
+}

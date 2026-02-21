@@ -1,0 +1,6 @@
+Method,Name,Error,Occurrences
+POST,/orders,HTTPError('400 Client Error: Bad Request for url: /orders'),1
+GET,/menu,"ConnectionRefusedError(10061, '[WinError 10061] No connection could be made because the target machine actively refused it.')",2037
+POST,/auth/login,"ConnectionRefusedError(10061, '[WinError 10061] No connection could be made because the target machine actively refused it.')",4783
+GET,/orders/my-orders,HTTPError('404 Client Error: Not Found for url: /orders/my-orders'),5
+GET,/health,"ConnectionRefusedError(10061, '[WinError 10061] No connection could be made because the target machine actively refused it.')",376

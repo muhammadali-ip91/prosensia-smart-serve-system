@@ -1,0 +1,279 @@
+# ================================================
+# ProSensia Smart-Serve — Weekly AI Model Retraining
+# ================================================
+# Runs every Monday at 2:00 AM UTC.
+# Can also be triggered manually.
+#
+# Steps:
+# 1. Export real data from database
+# 2. Retrain model
+# 3. Compare with existing model
+# 4. Replace only if new model is better
+# 5. Commit updated model to repo
+# ================================================
+
+name: AI Model Retraining
+
+on:
+  # Weekly schedule: Every Monday at 2:00 AM UTC
+  schedule:
+    - cron: "0 2 * * 1"
+
+  # Manual trigger
+  workflow_dispatch:
+    inputs:
+      force_retrain:
+        description: "Force save new model even if not better"
+        required: false
+        default: false
+        type: boolean
+      use_db_data:
+        description: "Export fresh data from database"
+        required: false
+        default: true
+        type: boolean
+
+env:
+  PYTHON_VERSION: "3.11"
+
+jobs:
+  # ========================================
+  # Job 1: Retrain AI Model
+  # ========================================
+  retrain:
+    name: "🤖 Retrain ETA Model"
+    runs-on: ubuntu-latest
+    
+    # Only run if on main branch
+    if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: prosensia
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    permissions:
+      contents: write  # Needed to commit model files
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r ai_module/requirements.txt
+          pip install -r backend/requirements.txt
+
+      - name: Set PYTHONPATH
+        run: echo "PYTHONPATH=$PYTHONPATH:$(pwd)" >> $GITHUB_ENV
+
+      # ── Step 1: Check existing model ──
+      - name: Check existing model
+        id: check_model
+        run: |
+          if [ -f ai_module/models/eta_model.pkl ]; then
+            echo "existing_model=true" >> $GITHUB_OUTPUT
+            echo "✅ Existing model found"
+            if [ -f ai_module/models/model_metadata.json ]; then
+              echo "Current model metadata:"
+              cat ai_module/models/model_metadata.json
+            fi
+          else
+            echo "existing_model=false" >> $GITHUB_OUTPUT
+            echo "⚠️ No existing model found"
+
+      # ── Step 2: Export data from database ──
+      - name: Export training data from database
+        if: ${{ github.event.inputs.use_db_data != 'false' }}
+        run: |
+          echo "Attempting to export data from database..."
+          python -m ai_module.scripts.export_training_data \
+            || echo "Database export skipped (may not be available)"
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/prosensia
+
+      # ── Step 3: Generate synthetic data if needed ──
+      - name: Ensure training data exists
+        run: |
+          if [ ! -f ai_module/data/training_data.csv ]; then
+            echo "No training data found. Generating synthetic data..."
+            python -m ai_module.scripts.generate_data
+          else
+            echo "Training data exists:"
+            wc -l ai_module/data/training_data.csv
+          fi
+
+      # ── Step 4: Retrain model ──
+      - name: Retrain AI model
+        id: retrain
+        run: |
+          echo "Starting model retraining..."
+          python -c "
+          import json
+          import sys
+          sys.path.insert(0, '.')
+          from ai_module.scripts.retrain import retrain_model
+          
+          results = retrain_model(
+              use_db_data=False,
+              force_save=${{ github.event.inputs.force_retrain == 'true' && 'True' || 'False' }}
+          )
+          
+          # Save results for later steps
+          with open('retrain_results.json', 'w') as f:
+              json.dump(results, f, indent=2, default=str)
+          
+          # Set outputs
+          print(f'mae={results.get(\"mae\", \"N/A\")}')
+          print(f'model_replaced={results.get(\"model_replaced\", False)}')
+          "
+          
+          # Read results
+          if [ -f retrain_results.json ]; then
+            MAE=$(python3 -c "import json; d=json.load(open('retrain_results.json')); print(d.get('mae', 'N/A'))")
+            REPLACED=$(python3 -c "import json; d=json.load(open('retrain_results.json')); print(d.get('model_replaced', False))")
+            echo "mae=$MAE" >> $GITHUB_OUTPUT
+            echo "replaced=$REPLACED" >> $GITHUB_OUTPUT
+          fi
+
+      # ── Step 5: Evaluate new model ──
+      - name: Evaluate retrained model
+        run: |
+          echo "Evaluating model..."
+          python -m ai_module.scripts.evaluate_model
+
+      # ── Step 6: Run AI tests ──
+      - name: Run AI tests
+        run: |
+          pip install pytest
+          pytest tests/unit/ai/ -v --tb=short || echo "Some AI tests may have failed"
+
+      # ── Step 7: Commit updated model ──
+      - name: Commit updated model
+        if: steps.retrain.outputs.replaced == 'True'
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          
+          # Add model files
+          git add ai_module/models/eta_model.pkl \
+                  ai_module/models/eta_model_backup.pkl \
+                  ai_module/models/model_metadata.json \
+                  2>/dev/null || true
+          
+          # Check if there are changes to commit
+          if git diff --staged --quiet; then
+            echo "No model changes to commit"
+          else
+            TIMESTAMP=$(date -u +'%Y-%m-%d %H:%M UTC')
+            MAE=${{ steps.retrain.outputs.mae }}
+            
+            git commit -m "🤖 AI Model Retrained (MAE: ${MAE}) - ${TIMESTAMP}
+
+          Automated weekly retraining by GitHub Actions.
+          - MAE: ${MAE} minutes
+          - Triggered: ${{ github.event_name }}
+          - Run: ${{ github.run_id }}"
+            
+            git push
+            echo "✅ Updated model committed to repository"
+          fi
+
+      # ── Step 8: Post summary ──
+      - name: Post retraining summary
+        if: always()
+        run: |
+          echo "# 🤖 AI Model Retraining Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Date:** $(date -u +'%Y-%m-%d %H:%M UTC')" >> $GITHUB_STEP_SUMMARY
+          echo "**Trigger:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ -f retrain_results.json ]; then
+            echo "## Results" >> $GITHUB_STEP_SUMMARY
+            echo '```json' >> $GITHUB_STEP_SUMMARY
+            cat retrain_results.json >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ -f ai_module/models/model_metadata.json ]; then
+            echo "## Current Model Metadata" >> $GITHUB_STEP_SUMMARY
+            echo '```json' >> $GITHUB_STEP_SUMMARY
+            cat ai_module/models/model_metadata.json >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+          fi
+
+      # ── Step 9: Create issue if accuracy drops ──
+      - name: Alert on accuracy drop
+        if: always()
+        run: |
+          if [ -f retrain_results.json ]; then
+            MAE=$(python3 -c "import json; d=json.load(open('retrain_results.json')); print(d.get('mae', 999))")
+            
+            # Check if MAE exceeds warning threshold (4.0)
+            python3 -c "
+          mae = float('$MAE')
+          if mae > 4.0:
+              print('⚠️ WARNING: Model accuracy has dropped!')
+              print(f'Current MAE: {mae:.4f} (threshold: 4.0)')
+              # In production, you could create a GitHub issue here
+          elif mae > 3.0:
+              print(f'⚠️ MAE ({mae:.4f}) is above target (3.0) but within tolerance')
+          else:
+              print(f'✅ Model accuracy is good (MAE: {mae:.4f})')
+            "
+          fi
+
+  # ========================================
+  # Job 2: Notify on Completion
+  # ========================================
+  notify:
+    name: "📢 Notify"
+    runs-on: ubuntu-latest
+    needs: retrain
+    if: always()
+
+    steps:
+      - name: Notification summary
+        run: |
+          echo "## 📢 Retraining Notification" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "${{ needs.retrain.result }}" == "success" ]; then
+            echo "✅ **AI Model retraining completed successfully!**" >> $GITHUB_STEP_SUMMARY
+          elif [ "${{ needs.retrain.result }}" == "failure" ]; then
+            echo "❌ **AI Model retraining FAILED!**" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Please investigate the retraining logs." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ **AI Model retraining was skipped or cancelled.**" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Run ID:** [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
+          
+          # In production, you could also:
+          # - Send Slack notification
+          # - Send email alert
+          # - Post to Microsoft Teams

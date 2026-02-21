@@ -1,0 +1,105 @@
+﻿version: '3.8'
+
+services:
+  # ============================================
+  # BACKEND API
+  # ============================================
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: prosensia-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://prosensia_user:prosensia_pass@db:5432/prosensia_db
+      - REDIS_URL=redis://redis:6379/0
+      - JWT_SECRET_KEY=prosensia-dev-secret-key-2024
+      - JWT_ALGORITHM=HS256
+      - ACCESS_TOKEN_EXPIRE_MINUTES=30
+      - REFRESH_TOKEN_EXPIRE_DAYS=7
+      - AI_MODEL_PATH=/app/ai_module/models/eta_model.pkl
+      - AI_FALLBACK_ENABLED=True
+      - FRONTEND_URL=http://localhost:3000
+      - CORS_ORIGINS=http://localhost:3000,http://frontend:3000
+      - DEBUG=True
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app/backend
+      - ./ai_module:/app/ai_module
+    restart: always
+    networks:
+      - prosensia-network
+
+  # ============================================
+  # FRONTEND
+  # ============================================
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: prosensia-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - VITE_API_URL=http://localhost:8000
+      - VITE_SOCKET_URL=ws://localhost:8000
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend/src:/app/src
+    restart: always
+    networks:
+      - prosensia-network
+
+  # ============================================
+  # POSTGRESQL DATABASE
+  # ============================================
+  db:
+    image: postgres:15-alpine
+    container_name: prosensia-db
+    environment:
+      - POSTGRES_DB=prosensia_db
+      - POSTGRES_USER=prosensia_user
+      - POSTGRES_PASSWORD=prosensia_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U prosensia_user -d prosensia_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: always
+    networks:
+      - prosensia-network
+
+  # ============================================
+  # REDIS CACHE
+  # ============================================
+  redis:
+    image: redis:7-alpine
+    container_name: prosensia-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: always
+    networks:
+      - prosensia-network
+
+volumes:
+  pgdata:
+    driver: local
+
+networks:
+  prosensia-network:
+    driver: bridge

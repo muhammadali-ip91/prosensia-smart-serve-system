@@ -1,0 +1,1 @@
+{"status":"unhealthy","timestamp":"2026-02-14T16:44:53.430992Z","version":"2.0.0","checks":{"database":"connected","redis":"disconnected","ai_model":"not_loaded","uptime_seconds":168,"uptime":"00:02:48"}}

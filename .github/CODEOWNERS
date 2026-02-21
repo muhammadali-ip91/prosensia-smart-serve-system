@@ -1,0 +1,36 @@
+# ================================================
+# ProSensia Smart-Serve — Code Owners
+# ================================================
+# These users/teams are automatically requested for
+# review when changes are made to their areas.
+# ================================================
+
+# Default owners for everything
+*                           @project-lead
+
+# Backend
+/backend/                   @backend-team
+/backend/auth/              @security-team
+
+# Frontend
+/frontend/                  @frontend-team
+
+# AI Module
+/ai_module/                 @ai-team @data-science-team
+
+# Automation & Testing
+/automation/                @qa-team
+/tests/                     @qa-team
+
+# DevOps
+/.github/                   @devops-team
+/docker-compose.yml         @devops-team
+/backend/Dockerfile         @devops-team
+/frontend/Dockerfile        @devops-team
+
+# Documentation
+/docs/                      @project-lead @tech-writer
+
+# Database
+/backend/migrations/        @backend-team @dba-team
+/backend/models/            @backend-team
