@@ -344,7 +344,7 @@ jobs:
 
       - name: Test Docker Compose config
         run: |
-          docker-compose config --quiet
+          docker compose config --quiet
           echo "✅ Docker Compose config is valid"
 
       - name: Post Docker results to summary
