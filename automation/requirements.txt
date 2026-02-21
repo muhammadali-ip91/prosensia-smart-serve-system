@@ -1,4 +1,4 @@
-﻿# Automation Module Dependencies
+# Automation Module Dependencies
 # Install: pip install -r automation/requirements.txt
 
 # HTTP Requests
@@ -19,7 +19,7 @@ aiohttp==3.9.3
 concurrent-log-handler==0.9.24
 
 # Progress Bars
-tqdm==4.66.1
+tqdm==4.67.3
 
 # Configuration
 python-dotenv==1.0.0
