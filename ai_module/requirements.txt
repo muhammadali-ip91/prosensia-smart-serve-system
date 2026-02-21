@@ -1,4 +1,4 @@
-﻿# AI Module Dependencies
+# AI Module Dependencies
 # Install: pip install -r ai_module/requirements.txt
 
 # Core ML Libraries
@@ -20,7 +20,7 @@ psycopg2-binary==2.9.9
 sqlalchemy==2.0.25
 
 # Environment variables
-python-dotenv==1.0.0
+python-dotenv==1.2.1
 
 # Logging
 loguru==0.7.2
